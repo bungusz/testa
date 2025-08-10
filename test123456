@@ -8537,8 +8537,6 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 		Directory = "Compkiller",
 		Config = "Software"
 	});
-    
-	local autoloadFile = ("%s/autoload.json"):format(directory)
 
 	if not isfolder(ConfigManager.Directory) then
 		makefolder(ConfigManager.Directory);
@@ -8718,25 +8716,6 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			end;
 		end;
 	end;
-
-    function Args:SetAutoload(configName)
-        writefile(autoloadFile, HttpService:JSONEncode({ autoload = configName }))
-    end
-
-    function Args:GetAutoload(): string?
-        if isfile(autoloadFile) then
-            local raw = readfile(autoloadFile)
-            local data = HttpService:JSONDecode(raw)
-            return data.autoload
-        end
-    end
-
-    function Args:LoadAutoload()
-        local toLoad = Args:GetAutoload()
-        if toLoad then
-            Args:LoadConfig(toLoad)
-        end
-    end
 
 	return Args;
 end;
