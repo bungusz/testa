@@ -3643,8 +3643,11 @@ function Compkiller:_LoadElement(Parent: Frame , EnabledLine: boolean , Signal)
 	
 		UserInputService.InputBegan:Connect(function(input, gameProcessed)
 			if gameProcessed then return end
-			if MatchesBound(input) then
-				Config.Callback(BoundKey)
+		
+			local keyName = NormalizeKey(input)
+			if keyName and keyName == BoundKey then
+		
+				Config.Callback(keyName)
 			end
 		end)
 	
