@@ -8260,56 +8260,58 @@ function Compkiller.new(Config : Window)
 			if WindowArgs.PerformanceMode then
 				MainFrame.Visible = Value;
 			end;
-
+		
 			WindowOpen:Fire(Value);
-
+		
 			if Value then
-				for i,v in next , WindowArgs.Tabs do
+				for i, v in next, WindowArgs.Tabs do
 					if v.Root == WindowArgs.SelectedTab then
 						v.Remote:Fire(true);
 					end;
 				end;
 			else
-				for i,v in next , WindowArgs.Tabs do
+				for i, v in next, WindowArgs.Tabs do
 					v.Remote:Fire(false);
 				end;
 			end;
 		end;
-
+		
 		function WindowArgs:_ToggleUI()
 			WindowArgs.IsOpen = not WindowArgs.IsOpen;
-
-			WindowArgs:Toggle(WindowArgs.IsOpen)
-		end;
-
-		local Button = Compkiller:_Input(CloseWindow,function()
+			WindowArgs:Toggle(WindowArgs.IsOpen);
+		end
+		
+		_G.ToggleWindowUI = function()
+			WindowArgs:_ToggleUI()
+		end
+		
+		local Button = Compkiller:_Input(CloseWindow, function()
 			WindowArgs:_ToggleUI()
 		end)
-
+		
 		if not Compkiller:_IsMobile() then
-
-			Compkiller:_Hover(Button,function()
-				ImageLabel:SetAttribute("Hover",true);
-			end , function()
-				ImageLabel:SetAttribute("Hover",false);
+			Compkiller:_Hover(Button, function()
+				ImageLabel:SetAttribute("Hover", true);
+			end, function()
+				ImageLabel:SetAttribute("Hover", false);
 			end);
 		end;
-
-		table.insert(WindowArgs.THREADS,task.spawn(function()
+		
+		table.insert(WindowArgs.THREADS, task.spawn(function()
 			while true do task.wait(0.15)
 				if Compkiller:_IsMobile() then
 					ToggleCloseUI(true);
-
+		
 					if WindowArgs.IsOpen then
-						Compkiller:_Animation(ImageLabel,TweenInfo.new(0.2),{
+						Compkiller:_Animation(ImageLabel, TweenInfo.new(0.2), {
 							ImageTransparency = 0.35
 						});
-
-						ImageLabel:GetAttribute("Hover",false);
+		
+						ImageLabel:SetAttribute("Hover", false);
 					else
-						ImageLabel:GetAttribute("Hover",true);
-
-						Compkiller:_Animation(ImageLabel,TweenInfo.new(0.2),{
+						ImageLabel:SetAttribute("Hover", true);
+		
+						Compkiller:_Animation(ImageLabel, TweenInfo.new(0.2), {
 							ImageTransparency = 0.1
 						});
 					end;
@@ -8322,19 +8324,18 @@ function Compkiller.new(Config : Window)
 				end;
 			end
 		end));
-
-		UserInputService.InputBegan:Connect(function(Input,Typing)
+		
+		UserInputService.InputBegan:Connect(function(Input, Typing)
 			if not Typing and (Input.KeyCode == Config.Keybind or Input.KeyCode.Name == Config.Keybind) then
 				WindowArgs:_ToggleUI()
 			end;
 		end);
-	end;
 
 	function WindowArgs:Update(config: WindowUpdate)
 		config = config or {};
 		config.Logo = config.Logo or Config.Logo;
 		config.Username = config.Username or LocalPlayer.DisplayName;
-		config.ExpireDate = config.ExpireDate or "NEVER";
+		config.ExpireDate = config.ExpireDate or "Buyer";
 		config.WindowName = config.WindowName or Config.Name;
 		config.UserProfile = config.UserProfile or string.format("rbxthumb://type=AvatarHeadShot&id=%s&w=150&h=150",tostring(LocalPlayer.UserId));
 
