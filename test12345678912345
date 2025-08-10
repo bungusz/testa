@@ -8590,33 +8590,43 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 		writefile(Compkiller:_Path(Args.Directory , Config.Name) , HttpService:JSONEncode(Flags));
 	end;
 
-	function Args:LoadConfigFromString(str: string)
-		local decoded = HttpService:JSONDecode(str);
-
-		local Flags = Compkiller:GetConfig("KV");
-
-		for i,v in next , decoded do
-			if v and v.Flag then
-
-				local Value = Flags[v.Flag];
-
-				if Value then
-
-					if v.Value.Type == "NormalElement" then
-						Value.Functions:SetValue(v.Value.Value);
-
-					elseif v.Value.Type == "ColorPicker" then
-
-						local Color = Color3.new(v.Value.Color3.R,v.Value.Color3.G,v.Value.Color3.B);
-
-						local Transparency = v.Value.Transparency;
-
-						Value.Functions:SetValue(Color , Transparency);
-					end;
-				end;
+	function Args:SaveConfigToString()
+		local Flags = Compkiller:GetConfig("KV")
+		local Config = {}
+	
+		for FlagName, FlagData in pairs(Flags) do
+			local Value, Transparency = FlagData.Functions:GetValue()
+	
+			local Entry = {
+				Flag = FlagName,
+				Value = {
+					Type = FlagData.Type
+				}
+			}
+	
+			if FlagData.Type == "ColorPicker" then
+				Entry.Value.Color3 = {
+					R = Value.R,
+					G = Value.G,
+					B = Value.B
+				}
+				Entry.Value.Transparency = Transparency
+			else
+				Entry.Value.Value = Value
 			end
-		end;
-	end;
+	
+			Config[FlagName] = Entry
+		end
+	
+		Config["__INFORMATION"] = {
+			Type = "Information",
+			Name = Args.CurrentConfigName or "Unnamed",
+			Author = Args.CurrentAuthor or "Unknown",
+			CreatedDate = os.date("%m/%d/%Y")
+		}
+	
+		return HttpService:JSONEncode(Config)
+	end
 
 	function Args:GetCurrentConfig()
 		return Compkiller:GetConfig("MK")
