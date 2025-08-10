@@ -8567,7 +8567,8 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			Type = "Information",
 			Author = Config.Author,
 			Name = Config.Name,
-			CreatedDate = Compkiller:GetDate()
+			CreatedDate = Compkiller:GetDate(),
+			Autoload = Config.Autoload or false,
 		};
 
 		if Args.EnableNotify then
@@ -8626,6 +8627,28 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 
 		return false;
 	end;
+
+	function Args:SetAutoloadConfig(ConfigName: string)
+		local pointerPath = Compkiller:_Path(Args.Directory, "_autoload.json");
+		writefile(pointerPath, HttpService:JSONEncode({ Name = ConfigName }));
+	
+		if Args.EnableNotify then
+			notify.new({
+				Title = "Configs",
+				Icon = Compkiller:_GetIcon('settings'),
+				Content = "Set autoload config to \""..ConfigName.."\""
+			});
+		end
+	end
+	
+	function Args:GetAutoloadConfig()
+		local pointerPath = Compkiller:_Path(Args.Directory, "_autoload.json");
+		if isfile(pointerPath) then
+			local data = HttpService:JSONDecode(readfile(pointerPath));
+			return data.Name;
+		end
+		return nil;
+	end
 
 	function Args:GetConfigs()
 		local names = {};
@@ -8716,6 +8739,11 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			end;
 		end;
 	end;
+
+	local autoloadName = Args:GetAutoloadConfig();
+	if autoloadName then
+		Args:LoadConfig(autoloadName);
+	end
 
 	return Args;
 end;
