@@ -6957,83 +6957,6 @@ function Compkiller.new(Config : Window)
 			Icon_2.ZIndex = 15
 			Icon_2.Image = "rbxassetid://10723344270"
 			Icon_2.ImageTransparency = 1
-
-			local AutoloadButton = Instance.new("Frame")
-			local Frame_3 = Instance.new("Frame")
-			local UIStroke_3A = Instance.new("UIStroke")
-			local UICorner_3A = Instance.new("UICorner")
-			local TextLabel_3 = Instance.new("TextLabel")
-			local Icon_3 = Instance.new("ImageLabel")
-			
-			AutoloadButton.Name = Compkiller:_RandomString()
-			AutoloadButton.Parent = LinkValues
-			AutoloadButton.BackgroundTransparency = 1.000
-			AutoloadButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
-			AutoloadButton.BorderSizePixel = 0
-			AutoloadButton.Size = UDim2.new(0, 77, 0, 30)
-			AutoloadButton.ZIndex = 14
-			
-			Frame_3.Parent = AutoloadButton
-			Frame_3.AnchorPoint = Vector2.new(0.5, 0.5)
-			Frame_3.BackgroundColor3 = Compkiller.Colors.Highlight
-			Frame_3.BackgroundTransparency = 1
-			Frame_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
-			Frame_3.BorderSizePixel = 0
-			Frame_3.Position = UDim2.new(0.5, 0, 0.5, 0)
-			Frame_3.Size = UDim2.new(1, -15, 1, -5)
-			Frame_3.ZIndex = 14
-			
-			table.insert(Compkiller.Elements.Highlight, {
-				Element = Frame_3,
-				Property = "BackgroundColor3"
-			})
-			
-			UIStroke_3A.Transparency = 1
-			UIStroke_3A.Color = Compkiller.Colors.StrokeColor
-			UIStroke_3A.Parent = Frame_3
-			
-			table.insert(Compkiller.Elements.StrokeColor, {
-				Element = UIStroke_3A,
-				Property = "Color"
-			})
-			
-			UICorner_3A.CornerRadius = UDim.new(0, 3)
-			UICorner_3A.Parent = Frame_3
-			
-			TextLabel_3.Parent = Frame_3
-			TextLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
-			TextLabel_3.BackgroundTransparency = 1.000
-			TextLabel_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
-			TextLabel_3.BorderSizePixel = 0
-			TextLabel_3.Position = UDim2.new(0.5, 27, 0.5, 0)
-			TextLabel_3.Size = UDim2.new(1, 0, 1, 0)
-			TextLabel_3.ZIndex = 14
-			TextLabel_3.Font = Enum.Font.GothamMedium
-			TextLabel_3.Text = "Autoload"
-			TextLabel_3.TextColor3 = Compkiller.Colors.SwitchColor
-			TextLabel_3.TextSize = 12.000
-			TextLabel_3.TextStrokeTransparency = 1
-			TextLabel_3.TextXAlignment = Enum.TextXAlignment.Left
-			TextLabel_3.TextTransparency = 1
-			
-			table.insert(Compkiller.Elements.SwitchColor, {
-				Element = TextLabel_3,
-				Property = "TextColor3"
-			})
-			
-			Icon_3.Name = Compkiller:_RandomString()
-			Icon_3.Parent = Frame_3
-			Icon_3.AnchorPoint = Vector2.new(0, 0.5)
-			Icon_3.BackgroundTransparency = 1.000
-			Icon_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
-			Icon_3.BorderSizePixel = 0
-			Icon_3.Position = UDim2.new(0, 5, 0.5, 0)
-			Icon_3.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
-			Icon_3.SizeConstraint = Enum.SizeConstraint.RelativeYY
-			Icon_3.ZIndex = 15
-			Icon_3.Image = "rbxassetid://10734941499"
-			Icon_3.ImageTransparency = 1
-
 			UIStroke_3.Transparency = 1
 
 			UIStroke_3.Color = Compkiller.Colors.StrokeColor
@@ -7206,18 +7129,12 @@ function Compkiller.new(Config : Window)
 				task.spawn(ConfigButton.OnSave);
 			end);
 
-			Compkiller:_Input(AutoloadButton, function()
-				task.spawn(ConfigButton.OnAutoload);
-			end)
-
-
 			DelButton.MouseButton1Click:Connect(function()
 				task.spawn(ConfigButton.OnDelete);
 			end)
 
 			ConfigButton.OnLoad = nil;
 			ConfigButton.OnSave = nil;
-			ConfigButton.OnAutoload = nil;
 			ConfigButton.OnDelete = nil;
 
 			return ConfigButton;
@@ -8650,8 +8567,7 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			Type = "Information",
 			Author = Config.Author,
 			Name = Config.Name,
-			CreatedDate = Compkiller:GetDate(),
-			Autoload = Config.Autoload or false,
+			CreatedDate = Compkiller:GetDate()
 		};
 
 		if Args.EnableNotify then
@@ -8710,28 +8626,6 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 
 		return false;
 	end;
-
-	function Args:SetAutoloadConfig(ConfigName: string)
-		local pointerPath = Compkiller:_Path(Args.Directory, "_autoload.json");
-		writefile(pointerPath, HttpService:JSONEncode({ Name = ConfigName }));
-	
-		if Args.EnableNotify then
-			notify.new({
-				Title = "Configs",
-				Icon = Compkiller:_GetIcon('settings'),
-				Content = "Set autoload config to \""..ConfigName.."\""
-			});
-		end
-	end
-	
-	function Args:GetAutoloadConfig()
-		local pointerPath = Compkiller:_Path(Args.Directory, "_autoload.json");
-		if isfile(pointerPath) then
-			local data = HttpService:JSONDecode(readfile(pointerPath));
-			return data.Name;
-		end
-		return nil;
-	end
 
 	function Args:GetConfigs()
 		local names = {};
@@ -8822,11 +8716,6 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			end;
 		end;
 	end;
-
-	local autoloadName = Args:GetAutoloadConfig();
-	if autoloadName then
-		Args:LoadConfig(autoloadName);
-	end
 
 	return Args;
 end;
