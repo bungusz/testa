@@ -6957,6 +6957,83 @@ function Compkiller.new(Config : Window)
 			Icon_2.ZIndex = 15
 			Icon_2.Image = "rbxassetid://10723344270"
 			Icon_2.ImageTransparency = 1
+
+			local AutoloadButton = Instance.new("Frame")
+			local AutoFrame = Instance.new("Frame")
+			local AutoStroke = Instance.new("UIStroke")
+			local AutoCorner = Instance.new("UICorner")
+			local AutoLabel = Instance.new("TextLabel")
+			local AutoIcon = Instance.new("ImageLabel")
+			
+			AutoloadButton.Name = Compkiller:_RandomString()
+			AutoloadButton.Parent = LinkValues
+			AutoloadButton.BackgroundTransparency = 1.000
+			AutoloadButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			AutoloadButton.BorderSizePixel = 0
+			AutoloadButton.Size = UDim2.new(0, 77, 0, 30)
+			AutoloadButton.ZIndex = 14
+			
+			AutoFrame.Parent = AutoloadButton
+			AutoFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+			AutoFrame.BackgroundColor3 = Compkiller.Colors.Highlight
+			AutoFrame.BackgroundTransparency = 1
+			AutoFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			AutoFrame.BorderSizePixel = 0
+			AutoFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+			AutoFrame.Size = UDim2.new(1, -15, 1, -5)
+			AutoFrame.ZIndex = 14
+			
+			table.insert(Compkiller.Elements.Highlight, {
+				Element = AutoFrame,
+				Property = "BackgroundColor3"
+			})
+			
+			AutoStroke.Transparency = 1
+			AutoStroke.Color = Compkiller.Colors.StrokeColor
+			AutoStroke.Parent = AutoFrame
+			
+			table.insert(Compkiller.Elements.StrokeColor, {
+				Element = AutoStroke,
+				Property = "Color"
+			})
+			
+			AutoCorner.CornerRadius = UDim.new(0, 3)
+			AutoCorner.Parent = AutoFrame
+			
+			AutoLabel.Parent = AutoFrame
+			AutoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+			AutoLabel.BackgroundTransparency = 1.000
+			AutoLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			AutoLabel.BorderSizePixel = 0
+			AutoLabel.Position = UDim2.new(0.5, 27, 0.5, 0)
+			AutoLabel.Size = UDim2.new(1, 0, 1, 0)
+			AutoLabel.ZIndex = 14
+			AutoLabel.Font = Enum.Font.GothamMedium
+			AutoLabel.Text = "Autoload"
+			AutoLabel.TextColor3 = Compkiller.Colors.SwitchColor
+			AutoLabel.TextSize = 12.000
+			AutoLabel.TextStrokeTransparency = 1
+			AutoLabel.TextXAlignment = Enum.TextXAlignment.Left
+			AutoLabel.TextTransparency = 1
+			
+			table.insert(Compkiller.Elements.SwitchColor, {
+				Element = AutoLabel,
+				Property = "TextColor3"
+			})
+			
+			AutoIcon.Name = Compkiller:_RandomString()
+			AutoIcon.Parent = AutoFrame
+			AutoIcon.AnchorPoint = Vector2.new(0, 0.5)
+			AutoIcon.BackgroundTransparency = 1.000
+			AutoIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			AutoIcon.BorderSizePixel = 0
+			AutoIcon.Position = UDim2.new(0, 5, 0.5, 0)
+			AutoIcon.Size = UDim2.new(0.699999988, 0, 0.699999988, 0)
+			AutoIcon.SizeConstraint = Enum.SizeConstraint.RelativeYY
+			AutoIcon.ZIndex = 15
+			AutoIcon.Image = "rbxassetid://10734941499"
+			AutoIcon.ImageTransparency = 1
+
 			UIStroke_3.Transparency = 1
 
 			UIStroke_3.Color = Compkiller.Colors.StrokeColor
@@ -7129,12 +7206,18 @@ function Compkiller.new(Config : Window)
 				task.spawn(ConfigButton.OnSave);
 			end);
 
+			Compkiller:_Input(AutoloadButton, function()
+				task.spawn(ConfigButton.OnAutoload);
+			end)
+
+
 			DelButton.MouseButton1Click:Connect(function()
 				task.spawn(ConfigButton.OnDelete);
 			end)
 
 			ConfigButton.OnLoad = nil;
 			ConfigButton.OnSave = nil;
+			ConfigButton.OnAutoload = nil;
 			ConfigButton.OnDelete = nil;
 
 			return ConfigButton;
