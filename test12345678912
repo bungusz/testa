@@ -3578,95 +3578,102 @@ function Compkiller:_LoadElement(Parent: Frame , EnabledLine: boolean , Signal)
 		return Args;
 	end;
 
-	function Args:AddKeybind(Config : Keybind)
-		Config = Compkiller.__CONFIG(Config,{
+	function Args:AddKeybind(Config: Keybind)
+		Config = Compkiller.__CONFIG(Config, {
 			Name = "Keybind",
 			Default = nil,
 			Flag = nil,
-			Callback = function() end;
+			Callback = function() end,
 			Blacklist = {}
-		});
-
-		local Block = Compkiller:_CreateBlock(Signal);
-
-		Block:SetParent(Parent);
-
-		Block:SetText(Config.Name);
-
-		Block:SetLine(EnabledLine);
-
-		Block:SetVisible(Signal:GetValue());
-
-		local Keybind = Block:AddLink('Keybind' , Config.Default);
-
-		local IsBinding = false;
-
-		local IsBlacklist = function(v)
-			return Config.Blacklist and (Config.Blacklist[v] or table.find(Config.Blacklist,v))
-		end;
-
-		Compkiller:_Input(Keybind.Root,function()
-			if IsBinding then
-				return;
-			end;
-
-			Keybind.SetValue("...");
-
-			local Selected = nil;
-
+		})
+	
+		local Block = Compkiller:_CreateBlock(Signal)
+		Block:SetParent(Parent)
+		Block:SetText(Config.Name)
+		Block:SetLine(EnabledLine)
+		Block:SetVisible(Signal:GetValue())
+	
+		local Keybind = Block:AddLink("Keybind", Config.Default)
+		local IsBinding = false
+		local BoundKey = Config.Default
+	
+		local function IsBlacklist(v)
+			return Config.Blacklist and (Config.Blacklist[v] or table.find(Config.Blacklist, v))
+		end
+	
+		local function NormalizeKey(input)
+			if input.KeyCode ~= Enum.KeyCode.Unknown and not IsBlacklist(input.KeyCode) and not IsBlacklist(input.KeyCode.Name) then
+				return input.KeyCode.Name
+			elseif input.UserInputType == Enum.UserInputType.MouseButton1 and not IsBlacklist("MouseLeft") then
+				return "MouseLeft"
+			elseif input.UserInputType == Enum.UserInputType.MouseButton2 and not IsBlacklist("MouseRight") then
+				return "MouseRight"
+			end
+			return nil
+		end
+	
+		local function MatchesBound(input)
+			local keyName = NormalizeKey(input)
+			return keyName and keyName == BoundKey
+		end
+	
+		Compkiller:_Input(Keybind.Root, function()
+			if IsBinding then return end
+			IsBinding = true
+	
+			Keybind.SetValue("...")
+	
+			local Selected = nil
 			while not Selected do
-				local Key = UserInputService.InputBegan:Wait();
-
-				if Key.KeyCode ~= Enum.KeyCode.Unknown and not IsBlacklist(Key.KeyCode) and not IsBlacklist(Key.KeyCode.Name) then
-					Selected = Key.KeyCode;
-				else
-					if Key.UserInputType == Enum.UserInputType.MouseButton1 and not IsBlacklist(Enum.UserInputType.MouseButton1) and not IsBlacklist("MouseLeft") then
-						Selected = "MouseLeft";
-					elseif Key.UserInputType == Enum.UserInputType.MouseButton2 and not IsBlacklist(Enum.UserInputType.MouseButton2) and not IsBlacklist("MouseRight") then
-						Selected = "MouseRight";
-					end;
-				end;
-			end;
-
-			local KeyName = typeof(Selected) == "string" and Selected or Selected.Name;
-
-			Config.Default = KeyName;
-
-			Keybind.SetValue(Selected);
-
-			IsBinding = false;
-
-			Config.Callback(KeyName);
-		end);
-
-		local Args = {};
-
-		Args.Flag = Config.Flag;
-
+				local input = UserInputService.InputBegan:Wait()
+				local keyName = NormalizeKey(input)
+				if keyName then
+					Selected = keyName
+				end
+			end
+	
+			BoundKey = Selected
+			Config.Default = Selected
+	
+			Keybind.SetValue(Selected)
+			IsBinding = false
+	
+			Config.Callback(Selected)
+		end)
+	
+		UserInputService.InputBegan:Connect(function(input, gameProcessed)
+			if gameProcessed then return end
+			if MatchesBound(input) then
+				Config.Callback(BoundKey)
+			end
+		end)
+	
+		local Args = {}
+		Args.Flag = Config.Flag
+	
 		function Args:SetValue(value)
-			Config.Default = value;
-
-			Keybind.SetValue(Config.Default);
-
-			Config.Callback(Config.Default);
-		end;
-
-		Args.Signal = Signal:Connect(function(bool)
-			Block:SetVisible(bool);
-		end);
-
-		Args.Link = Compkiller:_LoadOption(Block);
-
+			BoundKey = value
+			Config.Default = value
+			Keybind.SetValue(value)
+			Config.Callback(value)
+		end
+	
 		function Args:GetValue()
-			return (typeof(Config.Default) == "string" and Config.Default) or Config.Default.Name;
-		end;
-
+			return BoundKey
+		end
+	
+		Args.Signal = Signal:Connect(function(bool)
+			Block:SetVisible(bool)
+		end)
+	
+		Args.Link = Compkiller:_LoadOption(Block)
+	
 		if Config.Flag then
-			Compkiller.Flags[Config.Flag] = Args;
-		end;
-
-		return Args;
-	end;
+			Compkiller.Flags[Config.Flag] = Args
+		end
+	
+		return Args
+	end
 
 	function Args:AddColorPicker(Config: ColorPicker)
 		Config = Compkiller.__CONFIG(Config,{
