@@ -8330,6 +8330,7 @@ function Compkiller.new(Config : Window)
 				WindowArgs:_ToggleUI()
 			end;
 		end);
+	end;
 
 	function WindowArgs:Update(config: WindowUpdate)
 		config = config or {};
