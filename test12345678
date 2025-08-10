@@ -7175,7 +7175,8 @@ function Compkiller.new(Config : Window)
 				for i,v in next , FullConfig do
 					local Button = TabArgs:_DrawConfig();
 
-					Button:SetInfo(v.Info.Author,v.Name);
+					local info = type(v.Info) == "table" and v.Info or { Author = "Unknown" }
+					Button:SetInfo(info.Author, v.Name)
 
 					table.insert(__signals,TabOpenSignal:Connect(function(v)
 						Button:Toggle(v);
