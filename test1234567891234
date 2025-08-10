@@ -3621,7 +3621,7 @@ function Compkiller:_LoadElement(Parent: Frame , EnabledLine: boolean , Signal)
 			if IsBinding then return end
 			IsBinding = true
 	
-			Keybind.SetValue("...")
+			Keybind.SetValue("...") -- Show placeholder
 	
 			local Selected = nil
 			while not Selected do
@@ -3643,11 +3643,8 @@ function Compkiller:_LoadElement(Parent: Frame , EnabledLine: boolean , Signal)
 	
 		UserInputService.InputBegan:Connect(function(input, gameProcessed)
 			if gameProcessed then return end
-		
-			local keyName = NormalizeKey(input)
-			if keyName and keyName == BoundKey then
-		
-				Config.Callback(keyName)
+			if MatchesBound(input) then
+				Config.Callback(BoundKey)
 			end
 		end)
 	
@@ -3677,7 +3674,6 @@ function Compkiller:_LoadElement(Parent: Frame , EnabledLine: boolean , Signal)
 	
 		return Args
 	end
-
 	function Args:AddColorPicker(Config: ColorPicker)
 		Config = Compkiller.__CONFIG(Config,{
 			Name = "ColorPicker",
