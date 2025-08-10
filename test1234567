@@ -8613,19 +8613,23 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 		return Compkiller:GetConfig("MK")
 	end;
 
-	function Args:ReadInfo(ConfigName: string)
-		local _path = Compkiller:_Path(Args.Directory , ConfigName);
-
-		if isfile(_path) then
-			local info = readfile(_path);
-
-			local decoded = HttpService:JSONDecode(info);
-
-			return decoded.__INFORMATION;
-		end;
-
-		return false;
-	end;
+	function Args:ReadInfo(configName)
+	    local path = Args.Directory .. "/" .. configName
+	    if not isfile(path) then return false end
+	
+	    local success, info = pcall(readfile, path)
+	    if not success or not info or info == "" then return false end
+	
+	    local successDecode, decoded = pcall(function()
+	        return HttpService:JSONDecode(info)
+	    end)
+	
+	    if successDecode and decoded and decoded.__INFORMATION then
+	        return decoded.__INFORMATION
+	    end
+	
+	    return false
+	end
 
 	function Args:GetConfigs()
 		local names = {};
