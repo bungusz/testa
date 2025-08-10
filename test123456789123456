@@ -8590,47 +8590,30 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 		writefile(Compkiller:_Path(Args.Directory , Config.Name) , HttpService:JSONEncode(Flags));
 	end;
 
-	function Args:SaveConfigToString()
+	function Args:LoadConfigFromString(str: string)
+		local decoded = HttpService:JSONDecode(str)
 		local Flags = Compkiller:GetConfig("KV")
-		local Config = {}
 	
-		for FlagName, FlagData in pairs(Flags) do
-			local Value, Transparency = FlagData.Functions:GetValue()
+		for _, v in pairs(decoded) do
+			if v and v.Flag then
+				local Value = Flags[v.Flag]
+				if Value then
+					local valType = v.Value.Type
+					local valData = v.Value
 	
-			local Entry = {
-				Flag = FlagName,
-				Value = {
-					Type = FlagData.Type
-				}
-			}
-	
-			if FlagData.Type == "ColorPicker" then
-				Entry.Value.Color3 = {
-					R = Value.R,
-					G = Value.G,
-					B = Value.B
-				}
-				Entry.Value.Transparency = Transparency
-			else
-				Entry.Value.Value = Value
-			end
-	
-			Config[FlagName] = Entry
-		end
-	
-		Config["__INFORMATION"] = {
-			Type = "Information",
-			Name = Args.CurrentConfigName or "Unnamed",
-			Author = Args.CurrentAuthor or "Unknown",
-			CreatedDate = os.date("%m/%d/%Y")
-		}
-	
-		return HttpService:JSONEncode(Config)
-	end
+					if valType == "NormalElement" then
 
-	function Args:GetCurrentConfig()
-		return Compkiller:GetConfig("MK")
-	end;
+						Value.Functions:SetValue(valData.Value)
+	
+					elseif valType == "ColorPicker" then
+						local color = Color3.new(valData.Color3.R, valData.Color3.G, valData.Color3.B)
+						local transparency = valData.Transparency or 0
+						Value.Functions:SetValue(color, transparency)
+					end
+				end
+			end
+		end
+	end
 
 	function Args:ReadInfo(configName)
 	    local path = Args.Directory .. "/" .. configName
