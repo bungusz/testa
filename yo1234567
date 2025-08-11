@@ -8612,8 +8612,19 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 							Value.Functions:SetValue(color, transparency)
 						end
 					else
-						local lower = raw:lower()
-						local finalVal = (lower == "true") and true or (lower == "false") and false or tonumber(raw) or raw
+						raw = tostring(raw):lower():gsub("%s+", "") -- normalize casing and trim whitespace
+						local finalVal
+						
+						if raw == "true" then
+							finalVal = true
+						elseif raw == "false" then
+							finalVal = false
+						elseif tonumber(raw) then
+							finalVal = tonumber(raw)
+						else
+							finalVal = raw
+						end
+						
 						Value.Functions:SetValue(finalVal)
 					end
 				end
