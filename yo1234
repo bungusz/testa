@@ -8545,191 +8545,119 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 	ConfigManager = Compkiller.__CONFIG(ConfigManager , {
 		Directory = "Compkiller",
 		Config = "Software"
-	});
+	})
 
-	if not isfolder(ConfigManager.Directory) then
-		makefolder(ConfigManager.Directory);
-	end;
+	local baseDir = Compkiller:_Path(ConfigManager.Directory, ConfigManager.Config)
+	if not isfolder(ConfigManager.Directory) then makefolder(ConfigManager.Directory) end
+	if not isfolder(baseDir) then makefolder(baseDir) end
 
-	if not isfolder(Compkiller:_Path(ConfigManager.Directory , ConfigManager.Config)) then
-		makefolder(Compkiller:_Path(ConfigManager.Directory , ConfigManager.Config));
-	end;
+	local notify = Compkiller.newNotify()
 
 	local Args = {
-		Directory = Compkiller:_Path(ConfigManager.Directory , ConfigManager.Config);
+		Directory = baseDir,
 		EnableNotify = false,
-	};
-
-	local notify = Compkiller.newNotify();
+	}
 
 	function Args:WriteConfig(Config: WriteConfig)
-
-
 		Config = Compkiller.__CONFIG(Config , {
 			Name = Compkiller:_RandomString(),
 			Author = LocalPlayer.Name,
-		});
+		})
 
-		local Flags = Compkiller:GetConfig("MK");
+		local Flags = Compkiller:GetConfig("MK")
+		local lines = {}
 
-		Flags["__INFORMATION"] = {
-			Type = "Information",
-			Author = Config.Author,
-			Name = Config.Name,
-			CreatedDate = Compkiller:GetDate()
-		};
+		for flag, data in pairs(Flags) do
+			local val = data.Value
+			if val.Type == "ColorPicker" then
+				local c = val.Color3
+				local t = val.Transparency or 0
+				table.insert(lines, flag .. "=" .. c.R .. "," .. c.G .. "," .. c.B .. "," .. t)
+			else
+				local v = tostring(val.Value)
+				table.insert(lines, flag .. "=" .. v)
+			end
+		end
+
+		local path = Compkiller:_Path(Args.Directory, Config.Name)
+		writefile(path, table.concat(lines, "\n"))
 
 		if Args.EnableNotify then
 			notify.new({
 				Title = "Configs",
 				Icon = Compkiller:_GetIcon('settings'),
-				Content = "Create config \""..Config.Name.."\""
+				Content = "Create config \"" .. Config.Name .. "\""
 			})
 		end
+	end
 
-		writefile(Compkiller:_Path(Args.Directory , Config.Name) , HttpService:JSONEncode(Flags));
-	end;
+	function Args:LoadConfig(ConfigName: string)
+		local path = Compkiller:_Path(Args.Directory, ConfigName)
+		if not isfile(path) then return end
 
-	function Args:LoadConfigFromString(str: string)
-		local decoded = HttpService:JSONDecode(str)
+		local content = readfile(path)
 		local Flags = Compkiller:GetConfig("KV")
-	
-		for _, v in pairs(decoded) do
-			if v and v.Flag then
-				local Value = Flags[v.Flag]
-				if Value then
-					local valType = v.Value.Type
-					local valData = v.Value
-	
-					if valType == "NormalElement" then
 
-						Value.Functions:SetValue(valData.Value)
-	
-					elseif valType == "ColorPicker" then
-						local color = Color3.new(valData.Color3.R, valData.Color3.G, valData.Color3.B)
-						local transparency = valData.Transparency or 0
-						Value.Functions:SetValue(color, transparency)
+		for line in string.gmatch(content, "[^\r\n]+") do
+			local flag, raw = string.match(line, "^(.-)=(.+)$")
+			if flag and raw then
+				local Value = Flags[flag]
+				if Value then
+					local valType = Value.Value.Type
+					if valType == "ColorPicker" then
+						local r, g, b, t = string.match(raw, "([^,]+),([^,]+),([^,]+),([^,]+)")
+						if r and g and b and t then
+							local color = Color3.new(tonumber(r), tonumber(g), tonumber(b))
+							local transparency = tonumber(t)
+							Value.Functions:SetValue(color, transparency)
+						end
+					else
+						local lower = raw:lower()
+						local finalVal = (lower == "true") and true or (lower == "false") and false or tonumber(raw) or raw
+						Value.Functions:SetValue(finalVal)
 					end
 				end
 			end
 		end
-	end
-
-	function Args:ReadInfo(configName)
-	    local path = Args.Directory .. "/" .. configName
-	    if not isfile(path) then return false end
-	
-	    local success, info = pcall(readfile, path)
-	    if not success or not info or info == "" then return false end
-	
-	    local successDecode, decoded = pcall(function()
-	        return HttpService:JSONDecode(info)
-	    end)
-	
-	    if successDecode and decoded and decoded.__INFORMATION then
-	        return decoded.__INFORMATION
-	    end
-	
-	    return false
-	end
-
-	function Args:GetConfigs()
-		local names = {};
-
-		for i,v in next , listfiles(Args.Directory) do
-			local Name = string.sub(v , #Args.Directory + 2);
-
-			table.insert(names , Name);
-		end;
-
-		return names;
-	end;
-
-	function Args:GetFullConfigs()
-		local names = {};
-
-		for i,v in next , listfiles(Args.Directory) do
-			local Name = string.sub(v , #Args.Directory + 2);
-			local Info = Args:ReadInfo(Name);
-
-			table.insert(names , {
-				Name = Name,
-				Info = Info,
-			});
-		end;
-
-		return names;
-	end;
-
-	function Args:DeleteConfig(ConfigName)
-		local _path = Compkiller:_Path(Args.Directory,ConfigName);
 
 		if Args.EnableNotify then
 			notify.new({
 				Title = "Configs",
 				Icon = Compkiller:_GetIcon('settings'),
-				Content = "Delete config \""..ConfigName.."\""
+				Content = 'Load config "' .. ConfigName .. '"'
 			})
 		end
+	end
 
-		if isfile(_path) then
-			delfile(_path);
-		end;
-	end;
-
-	function Args:GetConfigCount()
-		return #listfiles(Args.Directory);
-	end;
-
-	function Args:LoadConfig(ConfigName: string)
-		local _path = Compkiller:_Path(Args.Directory, ConfigName)
-	
-		if isfile(_path) then
-			local info = readfile(_path)
-			local decoded = HttpService:JSONDecode(info)
-			local Flags = Compkiller:GetConfig("KV")
-	
+	function Args:DeleteConfig(ConfigName)
+		local path = Compkiller:_Path(Args.Directory, ConfigName)
+		if isfile(path) then
+			delfile(path)
 			if Args.EnableNotify then
 				notify.new({
 					Title = "Configs",
 					Icon = Compkiller:_GetIcon('settings'),
-					Content = 'Load config "' .. ConfigName .. '"'
+					Content = "Delete config \"" .. ConfigName .. "\""
 				})
 			end
-	
-			for _, v in next, decoded do
-				if v and v.Flag and v.Value then
-					local Value = Flags[v.Flag]
-	
-					if Value then
-						local valType = v.Value.Type
-						local val = v.Value.Value
-	
-						if valType == "NormalElement" then
-							if val ~= nil then
-								print("Applying:", v.Flag, "=", val)
-								Value.Functions:SetValue(val)
-							end
-	
-						elseif valType == "ColorPicker" then
-							local c = v.Value.Color3
-							local t = v.Value.Transparency
-	
-							if c and c.R and c.G and c.B then
-								local color = Color3.new(c.R, c.G, c.B)
-								Value.Functions:SetValue(color, t)
-							end
-						end
-					end
-				end
-			end
 		end
-	
-		return Args
 	end
 
-	return Args;
-end;
+	function Args:GetConfigs()
+		local names = {}
+		for _, file in next, listfiles(Args.Directory) do
+			local name = string.sub(file, #Args.Directory + 2)
+			table.insert(names, name)
+		end
+		return names
+	end
+
+	function Args:GetConfigCount()
+		return #listfiles(Args.Directory)
+	end
+
+	return Args
+end
 
 function Compkiller:Loader(IconId,Duration)
 	local CompKiller = Instance.new("ScreenGui")
