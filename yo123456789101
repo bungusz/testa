@@ -8613,28 +8613,28 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 							local transparency = tonumber(t)
 							Value.Functions:SetValue(color, transparency)
 						end
-					elseif valType == "Toggle" then
-						local normalized = raw:lower():gsub("%s+", "")
-						if normalized == "true" then
-							finalVal = true
-						elseif normalized == "false" then
-							finalVal = false
-						else
-							finalVal = false -- fallback safety
-						end
-						Value.Functions:SetValue(finalVal)
-					elseif valType == "Slider" then
-						finalVal = tonumber(raw) or 0
-						Value.Functions:SetValue(finalVal)
-					elseif valType == "KeyBind" then
-						finalVal = raw -- preserve casing and spacing
-						Value.Functions:SetValue(finalVal)
-					else
-						finalVal = raw -- fallback for unknown types
-						Value.Functions:SetValue(finalVal)
-					end
-	
-					print("Config Load", flag, "=", finalVal, "(", valType, ")")
+                    elseif valType == "Toggle" then
+                        local normalized = raw:lower():gsub("%s+", "")
+                        finalVal = normalized == "true"
+                        
+                        local current = Value.Functions:GetValue()
+                        if current == finalVal then
+                            Value.Functions:SetValue(not finalVal) -- Flip state
+                            task.wait() -- Allow UI to update
+                        end
+                        Value.Functions:SetValue(finalVal) -- Set desired state
+                    elseif valType == "Slider" then
+                        finalVal = tonumber(raw) or 0
+                        Value.Functions:SetValue(finalVal)
+                    elseif valType == "KeyBind" then
+                        finalVal = raw
+                        Value.Functions:SetValue(finalVal)
+                    else
+                        finalVal = raw
+                        Value.Functions:SetValue(finalVal)
+                    end
+    
+                    print("Config Load", flag, "=", finalVal, "(", valType, ")")
 				end
 			end
 		end
