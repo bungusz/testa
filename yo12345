@@ -8656,6 +8656,33 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 		return #listfiles(Args.Directory)
 	end
 
+	function Args:GetFullConfigs()
+		local configs = {}
+	
+		for _, file in next, listfiles(Args.Directory) do
+			local name = string.sub(file, #Args.Directory + 2)
+			local author = "Unknown"
+	
+			local success, content = pcall(readfile, file)
+			if success and content then
+				for line in string.gmatch(content, "[^\r\n]+") do
+					local flag, value = string.match(line, "^(.-)=(.+)$")
+					if flag and flag:lower() == "__author" then
+						author = value
+						break
+					end
+				end
+			end
+	
+			table.insert(configs, {
+				Name = name,
+				Info = { Author = author }
+			})
+		end
+	
+		return configs
+	end
+
 	return Args
 end
 
