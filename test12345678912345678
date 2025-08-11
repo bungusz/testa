@@ -38,7 +38,7 @@ export type WindowUpdate = {
 
 export type ConfigFunctions = {
 	Directory: string,
-	: (self: ConfigFunctions , Config: ) -> any?,
+	WriteConfig: (self: ConfigFunctions , Config: WriteConfig) -> any?,
 	ReadInfo: (self: ConfigFunctions , ConfigName: string) -> any?,
 	DeleteConfig: (self: ConfigFunctions , ConfigName: string) -> any?,
 	LoadConfig: (self: ConfigFunctions , ConfigName: string) -> any?,
