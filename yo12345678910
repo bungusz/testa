@@ -8620,31 +8620,21 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 						elseif normalized == "false" then
 							finalVal = false
 						else
-							finalVal = false
+							finalVal = false -- fallback safety
 						end
 						Value.Functions:SetValue(finalVal)
-						if Value.Callback then
-							Value.Callback(finalVal)
-						end
 					elseif valType == "Slider" then
 						finalVal = tonumber(raw) or 0
 						Value.Functions:SetValue(finalVal)
-						if Value.Callback then
-							Value.Callback(finalVal)
-						end
 					elseif valType == "KeyBind" then
-						finalVal = raw
+						finalVal = raw -- preserve casing and spacing
 						Value.Functions:SetValue(finalVal)
-						if Value.Callback then
-							Value.Callback(finalVal)
-						end
 					else
-						finalVal = raw
+						finalVal = raw -- fallback for unknown types
 						Value.Functions:SetValue(finalVal)
-						if Value.Callback then
-							Value.Callback(finalVal)
-						end
 					end
+	
+					print("Config Load", flag, "=", finalVal, "(", valType, ")")
 				end
 			end
 		end
