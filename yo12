@@ -8706,8 +8706,11 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 						local val = v.Value.Value
 	
 						if valType == "NormalElement" then
-							if val ~= nil and (type(val) ~= "boolean" or val == true or v.Value.Force) then
+							if val == true or (val ~= nil and type(val) ~= "boolean") then
+								print("Setting:", v.Flag, "to", val)
 								Value.Functions:SetValue(val)
+							else
+								print("Skipping:", v.Flag, "value:", val)
 							end
 	
 						elseif valType == "ColorPicker" then
