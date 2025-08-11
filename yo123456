@@ -7158,7 +7158,7 @@ function Compkiller.new(Config : Window)
 						Content = "Create config \""..TextBox.Text.."\""
 					})
 
-					Configuration:Config({
+					Configuration.Config:WriteConfig({
 						Name = TextBox.Text,
 						Author = WindowArgs.Username,
 					})
