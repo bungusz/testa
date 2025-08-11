@@ -8612,15 +8612,22 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 							Value.Functions:SetValue(color, transparency)
 						end
 					else
-						raw = tostring(raw):lower():gsub("%s+", "") -- normalize casing and trim whitespace
+						local valType = Value.Value.Type
 						local finalVal
 						
-						if raw == "true" then
-							finalVal = true
-						elseif raw == "false" then
-							finalVal = false
-						elseif tonumber(raw) then
-							finalVal = tonumber(raw)
+						if valType == "Toggle" then
+							local normalized = raw:lower():gsub("%s+", "")
+							if normalized == "true" then
+								finalVal = true
+							elseif normalized == "false" then
+								finalVal = false
+							else
+								finalVal = false
+							end
+						elseif valType == "Slider" then
+							finalVal = tonumber(raw) or 0
+						elseif valType == "KeyBind" then
+							finalVal = raw
 						else
 							finalVal = raw
 						end
