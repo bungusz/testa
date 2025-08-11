@@ -8594,16 +8594,18 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 	function Args:LoadConfig(ConfigName: string)
 		local path = Compkiller:_Path(Args.Directory, ConfigName)
 		if not isfile(path) then return end
-
+	
 		local content = readfile(path)
 		local Flags = Compkiller:GetConfig("KV")
-
+	
 		for line in string.gmatch(content, "[^\r\n]+") do
 			local flag, raw = string.match(line, "^(.-)=(.+)$")
 			if flag and raw then
 				local Value = Flags[flag]
 				if Value then
 					local valType = Value.Value.Type
+					local finalVal
+	
 					if valType == "ColorPicker" then
 						local r, g, b, t = string.match(raw, "([^,]+),([^,]+),([^,]+),([^,]+)")
 						if r and g and b and t then
@@ -8611,33 +8613,42 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 							local transparency = tonumber(t)
 							Value.Functions:SetValue(color, transparency)
 						end
-					else
-						local valType = Value.Value.Type
-						local finalVal
-						
-						if valType == "Toggle" then
-							local normalized = raw:lower():gsub("%s+", "")
-							if normalized == "true" then
-								finalVal = true
-							elseif normalized == "false" then
-								finalVal = false
-							else
-								finalVal = false
-							end
-						elseif valType == "Slider" then
-							finalVal = tonumber(raw) or 0
-						elseif valType == "KeyBind" then
-							finalVal = raw
+					elseif valType == "Toggle" then
+						local normalized = raw:lower():gsub("%s+", "")
+						if normalized == "true" then
+							finalVal = true
+						elseif normalized == "false" then
+							finalVal = false
 						else
-							finalVal = raw
+							finalVal = false
 						end
-						
 						Value.Functions:SetValue(finalVal)
+						if Value.Callback then
+							Value.Callback(finalVal)
+						end
+					elseif valType == "Slider" then
+						finalVal = tonumber(raw) or 0
+						Value.Functions:SetValue(finalVal)
+						if Value.Callback then
+							Value.Callback(finalVal)
+						end
+					elseif valType == "KeyBind" then
+						finalVal = raw
+						Value.Functions:SetValue(finalVal)
+						if Value.Callback then
+							Value.Callback(finalVal)
+						end
+					else
+						finalVal = raw
+						Value.Functions:SetValue(finalVal)
+						if Value.Callback then
+							Value.Callback(finalVal)
+						end
 					end
 				end
 			end
 		end
-
+	
 		if Args.EnableNotify then
 			notify.new({
 				Title = "Configs",
